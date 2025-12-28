@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轨迹可视化</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .trajectory-popup {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 12px;
+        }
+
+        .legend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            z-index: 1000;
+            max-width: 200px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+
+        .point-marker {
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <!-- 图例 -->
+    <div id="legend" class="legend" style="display: none;">
+        <div id="legend-content"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+
+    <script>
+        // 全局变量
+        let map = null;
+        let layers = {
+            original: null,
+            compressed: {}
+        };
+        let layerControls = {
+            original: true,
+            algorithms: {}
+        };
+
+        // 颜色配置
+        const colors = {
+            original: '#666666',     // 灰色 - 原始轨迹
+            dr: '#0052d9',          // 蓝色 - 自适应 DR
+            fixed_dr: '#ff4d4f',    // 红色 - 固定阈值 DR
+            semantic_dr: '#52c41a', // 绿色 - 语义增强 DR
+            sliding: '#faad14',     // 橙色 - Sliding Window
+            opening: '#722ed1',     // 紫色 - Opening Window
+            squish: '#13c2c2'       // 青色 - SQUISH
+        };
+
+        // 算法名称映射
+        const algorithmNames = {
+            'dr': '自适应 DR',
+            'fixed_dr': '固定阈值 DR',
+            'semantic_dr': '语义增强 DR',
+            'sliding': 'Sliding Window',
+            'opening': 'Opening Window',
+            'squish': 'SQUISH'
+        };
+
+        // 初始化地图
+        function initMap() {
+            // 创建地图实例
+            map = L.map('map', {
+                center: [39.9042, 116.4074], // 北京坐标作为默认中心
+                zoom: 10,
+                zoomControl: true,
+                preferCanvas: false
+            });
+
+            // 添加底图
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+        }
+
+        // 更新轨迹数据
+        function updateTrajectories(data) {
+            // 清除现有图层
+            clearAllLayers();
+
+            // 添加原始轨迹
+            if (data.original && layerControls.original) {
+                addTrajectoryLayer('original', data.original, colors.original);
+            }
+
+            // 添加压缩轨迹
+            Object.keys(data.compressed).forEach(algorithm => {
+                if (layerControls.algorithms[algorithm]) {
+                    addTrajectoryLayer(algorithm, data.compressed[algorithm], colors[algorithm] || '#666666');
+                }
+            });
+
+            // 更新图例
+            updateLegend();
+
+            // 调整地图视野
+            fitMapToBounds();
+        }
+
+        // 添加轨迹图层
+        function addTrajectoryLayer(name, points, color) {
+            if (!points || points.length === 0) return;
+
+            const latlngs = points.map(point => [point.lat, point.lon]);
+
+            // 创建轨迹线
+            const polyline = L.polyline(latlngs, {
+                color: color,
+                weight: name === 'original' ? 2 : 3,
+                opacity: name === 'original' ? 0.5 : 0.8,
+                dashArray: name === 'original' ? '5, 5' : null
+            });
+
+            // 创建点标记（只为压缩轨迹添加）
+            const markers = [];
+            if (name !== 'original') {
+                points.forEach((point, index) => {
+                    const marker = L.circleMarker([point.lat, point.lon], {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.7,
+                        radius: 5,
+                        weight: 2
+                    });
+
+                    const timestamp = new Date(point.timestamp).toLocaleString();
+                    marker.bindPopup(`
+                        <div class="trajectory-popup">
+                            <strong>${algorithmNames[name] || name}</strong><br>
+                            点 ${index + 1}<br>
+                            时间: ${timestamp}<br>
+                            位置: ${point.lat.toFixed(6)}, ${point.lon.toFixed(6)}
+                        </div>
+                    `);
+
+                    markers.push(marker);
+                });
+            }
+
+            // 保存图层引用
+            layers[name === 'original' ? 'original' : 'compressed'][name] = {
+                polyline: polyline,
+                markers: markers
+            };
+
+            // 添加到地图
+            polyline.addTo(map);
+            markers.forEach(marker => marker.addTo(map));
+        }
+
+        // 清除所有图层
+        function clearAllLayers() {
+            // 清除原始轨迹
+            if (layers.original && layers.original.polyline) {
+                map.removeLayer(layers.original.polyline);
+            }
+
+            // 清除压缩轨迹
+            Object.keys(layers.compressed).forEach(algorithm => {
+                const layer = layers.compressed[algorithm];
+                if (layer.polyline) {
+                    map.removeLayer(layer.polyline);
+                }
+                if (layer.markers) {
+                    layer.markers.forEach(marker => map.removeLayer(marker));
+                }
+            });
+
+            layers = { original: null, compressed: {} };
+        }
+
+        // 更新图层显示状态
+        function updateLayers(layerStates) {
+            layerControls = layerStates;
+
+            // 重新渲染轨迹（基于当前控制状态）
+            const currentData = getCurrentTrajectoryData();
+            if (currentData) {
+                updateTrajectories(currentData);
+            }
+        }
+
+        // 获取当前轨迹数据（用于重新渲染）
+        function getCurrentTrajectoryData() {
+            const data = { original: null, compressed: {} };
+
+            // 从现有图层收集数据（简化版，实际可能需要从外部存储）
+            // 这里暂时返回空，需要父页面在调用时提供完整数据
+
+            return data;
+        }
+
+        // 更新图例
+        function updateLegend() {
+            const legendContent = document.getElementById('legend-content');
+            const legend = document.getElementById('legend');
+
+            let html = '';
+
+            if (layerControls.original && layers.original) {
+                html += `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: ${colors.original}"></div>
+                        原始轨迹
+                    </div>
+                `;
+            }
+
+            Object.keys(layerControls.algorithms).forEach(algorithm => {
+                if (layerControls.algorithms[algorithm] && layers.compressed[algorithm]) {
+                    html += `
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: ${colors[algorithm] || '#666666'}"></div>
+                            ${algorithmNames[algorithm] || algorithm}
+                        </div>
+                    `;
+                }
+            });
+
+            if (html) {
+                legendContent.innerHTML = html;
+                legend.style.display = 'block';
+            } else {
+                legend.style.display = 'none';
+            }
+        }
+
+        // 调整地图视野以适应所有轨迹
+        function fitMapToBounds() {
+            const allBounds = [];
+
+            // 收集所有可见图层的边界
+            if (layerControls.original && layers.original && layers.original.polyline) {
+                allBounds.push(layers.original.polyline.getBounds());
+            }
+
+            Object.keys(layerControls.algorithms).forEach(algorithm => {
+                if (layerControls.algorithms[algorithm] && layers.compressed[algorithm]) {
+                    const layer = layers.compressed[algorithm];
+                    if (layer.polyline) {
+                        allBounds.push(layer.polyline.getBounds());
+                    }
+                }
+            });
+
+            if (allBounds.length > 0) {
+                const totalBounds = allBounds.reduce((acc, bounds) =>
+                    acc ? acc.extend(bounds) : bounds
+                );
+                map.fitBounds(totalBounds, { padding: [20, 20] });
+            }
+        }
+
+        // 存储轨迹数据的全局变量
+        let currentTrajectoryData = null;
+
+        // 监听来自父页面的消息
+        window.addEventListener('message', function(event) {
+            const data = event.data;
+
+            if (data.type === 'update_trajectories') {
+                currentTrajectoryData = data;
+                updateTrajectories(data);
+            } else if (data.type === 'update_layers') {
+                updateLayers(data.layers);
+            }
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+        });
+
+        // 页面加载完成通知父页面（在地图初始化后发送，确保能立即接收数据）
+        document.addEventListener('DOMContentLoaded', function() {
+            // initMap 已在另一个回调调用，这里再保证发送 ready 信号
+            window.parent.postMessage({ type: 'viewer_ready' }, '*');
+        });
+    </script>
+</body>
+</html>
