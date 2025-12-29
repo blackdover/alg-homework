@@ -1,7 +1,3 @@
-"""
-SQUISH 流式轨迹简化算法
-"""
-
 import pandas as pd
 import heapq
 from typing import Dict, List
@@ -19,7 +15,7 @@ def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
         params: 参数字典，包含：
             - buffer_size: 缓冲区大小 B
     """
-    from ..geo_utils import GeoUtils
+    from ..utils.geo_utils import GeoUtils
 
     df = points  # 重命名以保持兼容性
 

@@ -1,7 +1,3 @@
-"""
-Sliding Window 轨迹压缩算法
-"""
-
 import pandas as pd
 from typing import Dict
 
@@ -18,7 +14,7 @@ def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
         params: 参数字典，包含：
             - epsilon: 距离阈值（米）
     """
-    from ..geo_utils import GeoUtils
+    from ..utils.geo_utils import GeoUtils
 
     df = points  # 重命名以保持兼容性
 

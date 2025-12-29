@@ -1,7 +1,3 @@
-"""
-语义增强 Dead Reckoning 轨迹压缩算法
-"""
-
 import pandas as pd
 from typing import Dict
 
@@ -23,7 +19,7 @@ def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
             - sog_threshold: 速度变化阈值（节）
             - time_threshold: 时间间隔阈值（秒）
     """
-    from ..geo_utils import GeoUtils
+    from ..utils.geo_utils import GeoUtils
 
     df = points  # 重命名以保持兼容性
 

@@ -11,13 +11,13 @@ import importlib
 from typing import Dict, Any, List
 from pathlib import Path
 
-from .dataloader import (
+from .utils.dataloader import (
     load_data, dataframe_to_trajectory_points, trajectory_points_to_dataframe, TrajectoryPoint,
     scan_categories, scan_datasets, load_ais_dataset
 )
-from .geo_utils import GeoUtils
-from .metrics import calculate_sed_metrics, calculate_navigation_event_recall, evaluate_compression
-from .visualization import visualize_trajectories
+from .utils.geo_utils import GeoUtils
+from .utils.metrics import calculate_sed_metrics, calculate_navigation_event_recall, evaluate_compression
+from .utils.visualization import visualize_trajectories
 
 # 动态加载算法
 _ALGORITHMS_DIR = Path(__file__).parent / "algorithms"

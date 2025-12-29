@@ -1,7 +1,3 @@
-"""
-自适应阈值 Dead Reckoning 轨迹压缩算法
-"""
-
 import pandas as pd
 from typing import Dict
 
@@ -24,7 +20,7 @@ def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
     返回:
         压缩后的DataFrame
     """
-    from ..geo_utils import GeoUtils
+    from ..utils.geo_utils import GeoUtils
 
     df = points  # 重命名以保持兼容性
 

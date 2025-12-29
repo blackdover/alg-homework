@@ -1,7 +1,3 @@
-"""
-Douglas-Peucker (DP) 离线轨迹压缩算法（手写实现）
-"""
-
 import pandas as pd
 from typing import Dict, List
 
@@ -11,7 +7,7 @@ def _point_line_distance_m(lat, lon, lat1, lon1, lat2, lon2):
     使用项目中的 GeoUtils 计算点到线段的距离（米）。
     这里在函数内部导入以避免循环依赖。
     """
-    from ..geo_utils import GeoUtils
+    from ..utils.geo_utils import GeoUtils
     return GeoUtils.point_to_line_distance(lat, lon, lat1, lon1, lat2, lon2)
 
 
