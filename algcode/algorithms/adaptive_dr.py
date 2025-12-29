@@ -7,6 +7,7 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     df = pts
     now = [0]
     last = 0
+
     for i in range(1, len(df)):
         lastpoint = df.iloc[last]
         currentpoint = df.iloc[i]
@@ -31,7 +32,7 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
             lat2=next_lat,
             lon2=next_lon
         )
-        
+
         epsilon_min = p.get('min_threshold', 20.0)
         epsilon_max = p.get('max_threshold', 500.0)
         v_lower = p.get('v_lower', 3.0)
@@ -43,9 +44,11 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
         else:
             k = (epsilon_max - epsilon_min) / (v_upper - v_lower)
             epsilon = k * (speed - v_lower) + epsilon_min
+
         if error >= epsilon:
             now.append(i)
             last = i
+
     if now[-1] != len(df) - 1:
         now.append(len(df) - 1)
     return df.iloc[now].reset_index(drop=False).rename(columns={"index": "orig_idx"})

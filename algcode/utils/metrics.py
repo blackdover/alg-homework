@@ -34,7 +34,7 @@ def calculate_sed_metrics(original_df: pd.DataFrame,
     c[time_col] = _ensure_datetime(c[time_col])
     o = o.dropna(subset=[time_col, lat_col, lon_col]).reset_index(drop=True)
     c = c.dropna(subset=[time_col, lat_col, lon_col, idx_col]).reset_index(drop=True)
-    
+
     if len(c) <= 1 or len(o) <= 1:
         return {"mean": 0.0, "max": 0.0, "p95": 0.0}
     sed_values = []
@@ -43,10 +43,12 @@ def calculate_sed_metrics(original_df: pd.DataFrame,
         e = c.iloc[i + 1]
         si = int(s[idx_col])
         ei = int(e[idx_col])
+
         if ei <= si:
             continue
         t0 = s[time_col]
         t1 = e[time_col]
+
         if pd.isna(t0) or pd.isna(t1):
             continue
         denom = (t1 - t0).total_seconds()
@@ -171,9 +173,6 @@ def calculate_trajectory_similarity(original_df: pd.DataFrame,
                                   compressed_df: pd.DataFrame,
                                   sed_metrics: Dict[str, float]) -> float:
     from .geo_utils import GeoUtils
-
-    if len(original_df) <= 1 or len(compressed_df) <= 1:
-        return 0.0
 
     total_distance = 0.0
     for i in range(1, len(original_df)):

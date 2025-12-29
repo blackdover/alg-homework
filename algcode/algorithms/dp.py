@@ -6,6 +6,7 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     df = pts
     eps_deg = float(p.get('epsilon', 0.0009))
     epsilon = eps_deg * 111000.0
+
     now: List[int] = []
     def recurse(start: int, end: int):
         if end <= start + 1:
@@ -24,6 +25,7 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
             if dist > maxdist:
                 maxdist = dist
                 maxi = i
+
         if maxdist > epsilon and maxi != -1:
             recurse(start, maxi)
             now.append(maxi)
