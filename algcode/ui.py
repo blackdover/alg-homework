@@ -281,7 +281,7 @@ class TrajectoryCompressionGUI(QMainWindow):
 
         # 可视化标签页
         self.create_visualization_tab()
-        self.tab_widget.addTab(self.visualization_tab, "轨迹可视化")
+        self.tab_widget.addTab(self.visualization_tab, "轨迹")
 
         # 评估指标标签页
         self.create_metrics_tab()

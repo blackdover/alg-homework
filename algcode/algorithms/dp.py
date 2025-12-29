@@ -83,6 +83,6 @@ def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
 
 
 # 算法元数据
-DISPLAY_NAME = "Douglas-Peucker"
+DISPLAY_NAME = "DP"
 DEFAULT_PARAMS = {'epsilon': 0.0009}
 PARAM_HELP = {'epsilon': '距离阈值（度），或使用 epsilon_m 指定米'}
