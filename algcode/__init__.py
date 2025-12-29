@@ -96,14 +96,13 @@ try:
     from .algorithms import (
         dead_reckoning_compress,
         adaptive_dr_compress,
-        sliding_window_compress,
         opening_window_compress,
         dp_compress
     )
     # 导出旧接口
     _legacy_algorithms = [
         'dead_reckoning_compress', 'adaptive_dr_compress',
-        'sliding_window_compress', 'opening_window_compress', 'dp_compress'
+        'opening_window_compress', 'dp_compress'
     ]
 except ImportError:
     _legacy_algorithms = []
