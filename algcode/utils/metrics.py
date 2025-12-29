@@ -207,11 +207,12 @@ def calculate_trajectory_similarity(original_df: pd.DataFrame,
     normalized_sed = sed_metrics.get('mean', 0.0) / total_distance
 
     keep_ratio = len(compressed_df) / max(len(original_df), 1)
-    compression_penalty = 0.0
-    if keep_ratio < 0.05:
-        compression_penalty = (0.05 - keep_ratio) * 2.0
+    # compression_penalty = 0.0
+    # if keep_ratio < 0.05:
+    #     compression_penalty = (0.05 - keep_ratio) * 2.0
 
-    score = 1.0 / (1.0 + normalized_sed + compression_penalty)
+    # score = 1.0 / (1.0 + normalized_sed + compressionalty)
+    score = 1.0 / (1.0 + normalized_sed)
     return float(np.clip(score, 0.0, 1.0))
 
 
