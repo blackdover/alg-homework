@@ -33,6 +33,10 @@ def _load_algorithms():
     for py_file in _ALGORITHMS_DIR.glob("*.py"):
         module_name = py_file.stem
 
+        # 跳过被禁用的算法
+        if module_name in ['squish', 'semantic_dr']:
+            continue
+
         try:
             # 动态导入模块
             module = importlib.import_module(f".algorithms.{module_name}", package=__name__)
@@ -92,16 +96,14 @@ try:
     from .algorithms import (
         dead_reckoning_compress,
         adaptive_dr_compress,
-        semantic_dr_compress,
         sliding_window_compress,
         opening_window_compress,
-        squish_compress,
         dp_compress
     )
     # 导出旧接口
     _legacy_algorithms = [
-        'dead_reckoning_compress', 'adaptive_dr_compress', 'semantic_dr_compress',
-        'sliding_window_compress', 'opening_window_compress', 'squish_compress', 'dp_compress'
+        'dead_reckoning_compress', 'adaptive_dr_compress',
+        'sliding_window_compress', 'opening_window_compress', 'dp_compress'
     ]
 except ImportError:
     _legacy_algorithms = []

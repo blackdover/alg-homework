@@ -79,10 +79,10 @@ def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
         eps_m = eps_deg * 111000.0
 
     indices = _rdp_indices(df, eps_m)
-    return df.iloc[indices].reset_index(drop=True)
+    return df.iloc[indices].reset_index(drop=False).rename(columns={"index": "orig_idx"})
 
 
 # 算法元数据
-DISPLAY_NAME = "DP"
+DISPLAY_NAME = "Douglas-Peucker"
 DEFAULT_PARAMS = {'epsilon': 0.0009}
 PARAM_HELP = {'epsilon': '距离阈值（度），或使用 epsilon_m 指定米'}

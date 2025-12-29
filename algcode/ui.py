@@ -317,9 +317,9 @@ class TrajectoryCompressionGUI(QMainWindow):
 
         # 指标表格
         self.metrics_table = QTableWidget()
-        self.metrics_table.setColumnCount(6)
+        self.metrics_table.setColumnCount(7)
         self.metrics_table.setHorizontalHeaderLabels([
-            '算法', '压缩率', 'SED均值', 'SED最大', 'SED_95%', '事件保留'
+            '算法', '压缩率', 'SED均值', 'SED最大', 'SED_95%', '事件保留', '综合得分'
         ])
         # 设置等宽分布列
         self.metrics_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -506,23 +506,118 @@ class TrajectoryCompressionGUI(QMainWindow):
         if not self.compression_results:
             return
 
-        # 创建临时HTML文件
+        # 创建临时PNG文件
         import tempfile
-        temp_file = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
+        temp_file = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
         temp_file.close()
 
         try:
-            # 调用可视化函数（需要修改以支持多轨迹）
+            # 调用可视化函数
             self.create_interactive_visualization(temp_file.name)
 
-            # 在WebView中加载
-            self.web_view.load(QUrl.fromLocalFile(temp_file.name))
+            # 在标签页中显示图像
+            self.display_image_in_tab(temp_file.name)
 
             # 切换到可视化标签页
             self.tab_widget.setCurrentIndex(0)
 
         except Exception as e:
             QMessageBox.critical(self, "错误", f"生成可视化失败: {str(e)}")
+
+    def display_image_in_tab(self, image_path: str):
+        """在可视化标签页中显示图像，支持缩放"""
+        from PyQt5.QtGui import QPixmap, QPainter
+        from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QLabel
+        from PyQt5.QtCore import Qt
+
+        # 定义支持滚轮缩放的GraphicsView类
+        class ZoomableGraphicsView(QGraphicsView):
+            def __init__(self):
+                super().__init__()
+                self._zoom_factor = 1.0
+
+            def wheelEvent(self, event):
+                # 滚轮缩放
+                factor = 1.2 if event.angleDelta().y() > 0 else 1/1.2
+                self.scale(factor, factor)
+                self._zoom_factor *= factor
+
+        # 创建主布局
+        main_widget = QWidget()
+        main_layout = QVBoxLayout(main_widget)
+
+        # 创建控制按钮布局
+        control_layout = QHBoxLayout()
+        zoom_in_btn = QPushButton("放大 (+)")
+        zoom_out_btn = QPushButton("缩小 (-)")
+        fit_btn = QPushButton("适应窗口")
+        reset_btn = QPushButton("重置缩放")
+
+        zoom_in_btn.setMaximumWidth(80)
+        zoom_out_btn.setMaximumWidth(80)
+        fit_btn.setMaximumWidth(80)
+        reset_btn.setMaximumWidth(80)
+
+        control_layout.addWidget(zoom_in_btn)
+        control_layout.addWidget(zoom_out_btn)
+        control_layout.addWidget(fit_btn)
+        control_layout.addWidget(reset_btn)
+        control_layout.addStretch()
+
+        main_layout.addLayout(control_layout)
+
+        # 创建图形视图和场景
+        graphics_view = ZoomableGraphicsView()
+        scene = QGraphicsScene()
+        graphics_view.setScene(scene)
+
+        # 设置视图属性
+        graphics_view.setRenderHint(QPainter.Antialiasing)
+        graphics_view.setRenderHint(QPainter.SmoothPixmapTransform)
+        graphics_view.setDragMode(QGraphicsView.ScrollHandDrag)
+        graphics_view.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
+        graphics_view.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
+
+        # 加载图片
+        pixmap = QPixmap(image_path)
+        if pixmap.isNull():
+            error_label = QLabel("图片加载失败")
+            main_layout.addWidget(error_label)
+        else:
+            pixmap_item = QGraphicsPixmapItem(pixmap)
+            scene.addItem(pixmap_item)
+
+            # 适应窗口大小
+            graphics_view.fitInView(pixmap_item, Qt.KeepAspectRatio)
+
+            main_layout.addWidget(graphics_view)
+
+            # 连接按钮信号
+            def zoom_in():
+                factor = 1.2
+                graphics_view.scale(factor, factor)
+
+            def zoom_out():
+                factor = 1/1.2
+                graphics_view.scale(factor, factor)
+
+            def fit_to_window():
+                graphics_view.fitInView(pixmap_item, Qt.KeepAspectRatio)
+
+            def reset_zoom():
+                graphics_view.resetTransform()
+                graphics_view.fitInView(pixmap_item, Qt.KeepAspectRatio)
+
+            zoom_in_btn.clicked.connect(zoom_in)
+            zoom_out_btn.clicked.connect(zoom_out)
+            fit_btn.clicked.connect(fit_to_window)
+            reset_btn.clicked.connect(reset_zoom)
+
+        # 替换可视化标签页的内容
+        if self.tab_widget.count() > 0:
+            self.tab_widget.removeTab(0)
+        self.tab_widget.insertTab(0, main_widget, "轨迹可视化")
+        self.tab_widget.setCurrentIndex(0)
 
     def create_interactive_visualization(self, output_file: str):
         """创建交互式可视化"""
@@ -550,29 +645,42 @@ class TrajectoryCompressionGUI(QMainWindow):
 
         self.metrics_table.setRowCount(0)
 
+        # 收集所有算法的指标并计算综合得分后排序
+        metrics_list = []
         for alg_name, compressed_df in self.compression_results.items():
             if alg_name == 'original':
                 continue
-
             try:
-                # 计算指标
-                metrics = evaluate_compression(
-                    self.current_df, compressed_df, alg_name, 0.0, True
-                )
+                metrics = evaluate_compression(self.current_df, compressed_df, alg_name, 0.0, True)
 
-                # 添加到表格
-                row = self.metrics_table.rowCount()
-                self.metrics_table.insertRow(row)
+                # 计算综合得分：权重可调整
+                # composite = 0.6 * similarity + 0.3 * event_recall - 0.1 * (compression_ratio / 100)
+                sim = float(metrics.get('trajectory_similarity', 0.0))
+                event_rec = float(metrics.get('event_recall', 0.0))
+                compression_ratio = float(metrics.get('compression_ratio', 0.0))  # 0-100
+                composite = 0.6 * sim + 0.3 * event_rec - 0.1 * (compression_ratio / 100.0)
+                metrics['composite_score'] = composite
 
-                self.metrics_table.setItem(row, 0, QTableWidgetItem(alg_name))
-                self.metrics_table.setItem(row, 1, QTableWidgetItem(f"{metrics['compression_ratio']:.1f}"))
-                self.metrics_table.setItem(row, 2, QTableWidgetItem(f"{metrics['sed_mean']:.2f}"))
-                self.metrics_table.setItem(row, 3, QTableWidgetItem(f"{metrics['sed_max']:.2f}"))
-                self.metrics_table.setItem(row, 4, QTableWidgetItem(f"{metrics['sed_p95']:.2f}"))
-                self.metrics_table.setItem(row, 5, QTableWidgetItem(f"{metrics['event_recall']:.3f}"))
+                metrics_list.append((alg_name, metrics))
 
             except Exception as e:
                 print(f"计算 {alg_name} 指标失败: {e}")
+
+        # 按综合得分降序排序并填充表格
+        metrics_list.sort(key=lambda x: x[1].get('composite_score', 0.0), reverse=True)
+        for alg_name, metrics in metrics_list:
+            row = self.metrics_table.rowCount()
+            self.metrics_table.insertRow(row)
+            try:
+                self.metrics_table.setItem(row, 0, QTableWidgetItem(alg_name))
+                self.metrics_table.setItem(row, 1, QTableWidgetItem(f"{metrics.get('compression_ratio', 0.0):.1f}"))
+                self.metrics_table.setItem(row, 2, QTableWidgetItem(f"{metrics.get('sed_mean', 0.0):.2f}"))
+                self.metrics_table.setItem(row, 3, QTableWidgetItem(f"{metrics.get('sed_max', 0.0):.2f}"))
+                self.metrics_table.setItem(row, 4, QTableWidgetItem(f"{metrics.get('sed_p95', 0.0):.2f}"))
+                self.metrics_table.setItem(row, 5, QTableWidgetItem(f"{metrics.get('event_recall', 0.0):.3f}"))
+                self.metrics_table.setItem(row, 6, QTableWidgetItem(f"{metrics.get('composite_score', 0.0):.5f}"))
+            except Exception as e:
+                print(f"填充表格时出错 {alg_name}: {e}")
 
     def on_export_results(self):
         """导出结果"""

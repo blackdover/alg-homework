@@ -74,7 +74,7 @@ def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
     if not compressed_indices or compressed_indices[-1] != len(df) - 1:
         compressed_indices.append(len(df) - 1)
 
-    return df.iloc[compressed_indices].reset_index(drop=True)
+    return df.iloc[compressed_indices].reset_index(drop=False).rename(columns={"index": "orig_idx"})
 
 
 # 算法元数据
