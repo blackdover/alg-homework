@@ -45,7 +45,17 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
             lon2=predlon
         )
 
-        threshold = GeoUtils.get_linear_threshold(speedknots, p)
+        epsilon_min = p.get('min_threshold', 20.0)
+        epsilon_max = p.get('max_threshold', 500.0)
+        v_lower = p.get('v_lower', 3.0)
+        v_upper = p.get('v_upper', 20.0)
+        if speedknots <= v_lower:
+            threshold = epsilon_min
+        elif speedknots >= v_upper:
+            threshold = epsilon_max
+        else:
+            k = (epsilon_max - epsilon_min) / (v_upper - v_lower)
+            threshold = k * (speedknots - v_lower) + epsilon_min
 
         if error >= threshold:
             compressedindices.append(i)

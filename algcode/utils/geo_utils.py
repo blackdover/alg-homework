@@ -44,20 +44,6 @@ class GeoUtils:
         return lat_new, lon_new
 
     @staticmethod
-    def get_linear_threshold(speed_knots: float, params: Dict) -> float:
-        epsilon_min = params.get('min_threshold', 20.0)
-        epsilon_max = params.get('max_threshold', 500.0)
-        v_lower = params.get('v_lower', 3.0)
-        v_upper = params.get('v_upper', 20.0)
-        if speed_knots <= v_lower:
-            return epsilon_min
-        if speed_knots >= v_upper:
-            return epsilon_max
-        k = (epsilon_max - epsilon_min) / (v_upper - v_lower)
-        current_epsilon = k * (speed_knots - v_lower) + epsilon_min
-        return current_epsilon
-
-    @staticmethod
     def point_to_line_distance(lat: float, lon: float,
                               lat1: float, lon1: float,
                               lat2: float, lon2: float) -> float:
