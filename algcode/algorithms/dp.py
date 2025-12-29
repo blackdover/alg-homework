@@ -48,10 +48,13 @@ def _rdp_indices(df: pd.DataFrame, epsilon_m: float) -> List[int]:
     # 总是保留首尾
     start_idx = 0
     end_idx = len(df) - 1
-    indices = [start_idx, end_idx]
+    indices = [start_idx]  # 初始化为包含起始点的列表
     recurse(start_idx, end_idx)
+    # 确保包含结束点
+    if end_idx not in indices:
+        indices.append(end_idx)
     # 去重并排序
-    indices = sorted(set(indices))
+    indices = sorted(list(set(indices)))
     return indices
 
 
@@ -83,6 +86,6 @@ def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
 
 
 # 算法元数据
-DISPLAY_NAME = "Douglas-Peucker"
+DISPLAY_NAME = "DP算法"
 DEFAULT_PARAMS = {'epsilon': 0.0009}
-PARAM_HELP = {'epsilon': '距离阈值（度），或使用 epsilon_m 指定米'}
+PARAM_HELP = {'epsilon': '距离阈值（度）'}

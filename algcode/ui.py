@@ -259,7 +259,7 @@ class TrajectoryCompressionGUI(QMainWindow):
         """创建操作按钮"""
         button_layout = QVBoxLayout()
 
-        self.run_button = QPushButton("生成并显示")
+        self.run_button = QPushButton("计算结果")
         self.run_button.clicked.connect(self.on_run_compression)
         self.run_button.setMinimumHeight(35)
         button_layout.addWidget(self.run_button)
@@ -381,8 +381,8 @@ class TrajectoryCompressionGUI(QMainWindow):
 
     def add_algorithm_parameters(self, alg_key: str, alg_info: AlgorithmInfo):
         """添加算法参数控件"""
-        # 算法标题
-        title_label = QLabel(f"{alg_info.display_name} 参数")
+        # 算法标题（直接使用算法显示名，去掉“参数”字样）
+        title_label = QLabel(f"{alg_info.display_name}")
         title_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
         self.param_layout.addWidget(title_label)
 
@@ -548,20 +548,20 @@ class TrajectoryCompressionGUI(QMainWindow):
 
         # 创建控制按钮布局
         control_layout = QHBoxLayout()
-        zoom_in_btn = QPushButton("放大 (+)")
-        zoom_out_btn = QPushButton("缩小 (-)")
-        fit_btn = QPushButton("适应窗口")
-        reset_btn = QPushButton("重置缩放")
+        zoom_in_btn = QPushButton("放大")
+        zoom_out_btn = QPushButton("缩小")
+        fit_btn = QPushButton("适应")
+        # reset_btn = QPushButton("重置缩放")
 
         zoom_in_btn.setMaximumWidth(80)
         zoom_out_btn.setMaximumWidth(80)
         fit_btn.setMaximumWidth(80)
-        reset_btn.setMaximumWidth(80)
+        # reset_btn.setMaximumWidth(80)
 
         control_layout.addWidget(zoom_in_btn)
         control_layout.addWidget(zoom_out_btn)
         control_layout.addWidget(fit_btn)
-        control_layout.addWidget(reset_btn)
+        # control_layout.addWidget(reset_btn)
         control_layout.addStretch()
 
         main_layout.addLayout(control_layout)
@@ -611,7 +611,7 @@ class TrajectoryCompressionGUI(QMainWindow):
             zoom_in_btn.clicked.connect(zoom_in)
             zoom_out_btn.clicked.connect(zoom_out)
             fit_btn.clicked.connect(fit_to_window)
-            reset_btn.clicked.connect(reset_zoom)
+            # reset_btn.clicked.connect(reset_zoom)
 
         # 替换可视化标签页的内容
         if self.tab_widget.count() > 0:

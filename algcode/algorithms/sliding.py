@@ -74,6 +74,6 @@ def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
 
 
 # 算法元数据
-DISPLAY_NAME = "Sliding Window"
+DISPLAY_NAME = "滑动窗口算法"
 DEFAULT_PARAMS = {'epsilon': 100.0}
 PARAM_HELP = {'epsilon': '距离阈值（米）'}

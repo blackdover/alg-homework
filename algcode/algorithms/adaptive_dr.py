@@ -23,7 +23,12 @@ def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
     from ..utils.geo_utils import GeoUtils
 
     df = points  # 重命名以保持兼容性
-
+    # 确保 BaseDateTime 为 datetime 类型，避免字符串减法导致错误
+    try:
+        df = df.copy()
+        df['BaseDateTime'] = pd.to_datetime(df['BaseDateTime'], errors='coerce')
+    except Exception:
+        pass
     if len(df) == 0:
         return df.copy()
     if len(df) == 1:
