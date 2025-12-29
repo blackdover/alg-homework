@@ -1,29 +1,10 @@
 import pandas as pd
 from typing import Dict
 
-
-def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
-    """
-    自适应阈值 Dead Reckoning 轨迹压缩算法
-
-    算法逻辑：
-    通过预测当前位置并与实际位置对比，如果预测误差小于阈值，则认为当前点冗余，可以丢弃。
-
-    参数:
-        points: 输入轨迹DataFrame，必须包含列：BaseDateTime, LAT, LON, SOG, COG
-        params: 参数字典，包含：
-            - min_threshold: 最低距离阈值（米）
-            - max_threshold: 最高距离阈值（米）
-            - v_lower: 低速截止点（节）
-            - v_upper: 高速截止点（节）
-
-    返回:
-        压缩后的DataFrame
-    """
+def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     from ..utils.geo_utils import GeoUtils
 
-    df = points  # 重命名以保持兼容性
-    # 确保 BaseDateTime 为 datetime 类型，避免字符串减法导致错误
+    df = pts
     try:
         df = df.copy()
         df['BaseDateTime'] = pd.to_datetime(df['BaseDateTime'], errors='coerce')
@@ -34,47 +15,46 @@ def compress(points: pd.DataFrame, params: Dict) -> pd.DataFrame:
     if len(df) == 1:
         return df.copy()
 
-    compressed_indices = [0]
-    last_index = 0
+    compressedindices = [0]
+    lastindex = 0
 
     for i in range(1, len(df)):
-        last_point = df.iloc[last_index]
-        current_point = df.iloc[i]
+        lastpoint = df.iloc[lastindex]
+        currentpoint = df.iloc[i]
 
-        delta_t = (current_point['BaseDateTime'] - last_point['BaseDateTime']).total_seconds()
-        if delta_t <= 0:
+        deltat = (currentpoint['BaseDateTime'] - lastpoint['BaseDateTime']).total_seconds()
+        if deltat <= 0:
             continue
 
-        speed_knots = last_point['SOG']
-        course_deg = last_point['COG']
-        speed_mps = GeoUtils.knots_to_mps(speed_knots)
+        speedknots = lastpoint['SOG']
+        coursedegr = lastpoint['COG']
+        speedmps = GeoUtils.knots_to_mps(speedknots)
 
-        pred_lat, pred_lon = GeoUtils.predict_position(
-            lat_old=last_point['LAT'],
-            lon_old=last_point['LON'],
-            speed_mps=speed_mps,
-            course_deg=course_deg,
-            delta_t=delta_t
+        predlat, predlon = GeoUtils.predict_position(
+            lat_old=lastpoint['LAT'],
+            lon_old=lastpoint['LON'],
+            speed_mps=speedmps,
+            course_deg=coursedegr,
+            delta_t=deltat
         )
 
         error = GeoUtils.haversine_distance(
-            lat1=current_point['LAT'],
-            lon1=current_point['LON'],
-            lat2=pred_lat,
-            lon2=pred_lon
+            lat1=currentpoint['LAT'],
+            lon1=currentpoint['LON'],
+            lat2=predlat,
+            lon2=predlon
         )
 
-        threshold = GeoUtils.get_linear_threshold(speed_knots, params)
+        threshold = GeoUtils.get_linear_threshold(speedknots, p)
 
         if error >= threshold:
-            compressed_indices.append(i)
-            last_index = i
+            compressedindices.append(i)
+            lastindex = i
 
-    if compressed_indices[-1] != len(df) - 1:
-        compressed_indices.append(len(df) - 1)
+    if compressedindices[-1] != len(df) - 1:
+        compressedindices.append(len(df) - 1)
 
-    # 返回并保留原始索引 orig_idx
-    return df.iloc[compressed_indices].reset_index(drop=False).rename(columns={"index": "orig_idx"})
+    return df.iloc[compressedindices].reset_index(drop=False).rename(columns={"index": "orig_idx"})
 
 
 # 算法元数据
