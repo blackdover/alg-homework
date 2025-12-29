@@ -6,17 +6,6 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     from ..utils.geo_utils import GeoUtils
 
     df = pts
-    try:
-        df = df.copy()
-        df['BaseDateTime'] = pd.to_datetime(df['BaseDateTime'], errors='coerce')
-    except Exception:
-        pass
-    if len(df) == 0:
-        return df.copy()
-
-    if len(df) == 1:
-        return df.copy()
-
     threshold = p.get('epsilon', 100.0)
 
     compressedindices = [0]
@@ -60,8 +49,6 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
 
     return df.iloc[compressedindices].reset_index(drop=False).rename(columns={"index": "orig_idx"})
 
-
-#向页面展示的数据
 DISPLAY_NAME = "固定阈值 DR"
 DEFAULT_PARAMS = {'epsilon': 100.0}
 PARAM_HELP = {'epsilon': '距离阈值（米）'}

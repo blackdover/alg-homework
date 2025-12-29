@@ -5,16 +5,6 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     from ..utils.geo_utils import GeoUtils
 
     df = pts
-    try:
-        df = df.copy()
-        df['BaseDateTime'] = pd.to_datetime(df['BaseDateTime'], errors='coerce')
-    except Exception:
-        pass
-    if len(df) == 0:
-        return df.copy()
-    if len(df) == 1:
-        return df.copy()
-
     compressedindices = [0]
     lastindex = 0
 

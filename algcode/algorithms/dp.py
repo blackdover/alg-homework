@@ -1,13 +1,14 @@
 import pandas as pd
 from typing import Dict, List
 
-
-def _point_line_distance_m(lat, lon, lat1, lon1, lat2, lon2):
+def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     from ..utils.geo_utils import GeoUtils
-    return GeoUtils.point_to_line_distance(lat, lon, lat1, lon1, lat2, lon2)
 
+    df = pts
 
-def _rdp_indices(df: pd.DataFrame, epsilon: float) -> List[int]:
+    eps_deg = float(p.get('epsilon', 0.0009))
+    epsilon = eps_deg * 111000.0
+
     indices: List[int] = []
 
     def recurse(start: int, end: int):
@@ -24,7 +25,7 @@ def _rdp_indices(df: pd.DataFrame, epsilon: float) -> List[int]:
         for i in range(start + 1, end):
             lat = df.iloc[i]['LAT']
             lon = df.iloc[i]['LON']
-            dist = _point_line_distance_m(lat, lon, lat1, lon1, lat2, lon2)
+            dist = GeoUtils.point_to_line_distance(lat, lon, lat1, lon1, lat2, lon2)
             if dist > maxdist:
                 maxdist = dist
                 maxidx = i
@@ -41,21 +42,6 @@ def _rdp_indices(df: pd.DataFrame, epsilon: float) -> List[int]:
     if endidx not in indices:
         indices.append(endidx)
     indices = sorted(list(set(indices)))
-    return indices
-
-
-def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
-    df = pts
-    if len(df) <= 2:
-        return df.copy()
-
-    if 'epsilon_m' in p:
-        epsilon = float(p['epsilon_m'])
-    else:
-        eps_deg = float(p.get('epsilon', 0.0009))
-        epsilon = eps_deg * 111000.0
-
-    indices = _rdp_indices(df, epsilon)
     return df.iloc[indices].reset_index(drop=False).rename(columns={"index": "orig_idx"})
 
 

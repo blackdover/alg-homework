@@ -6,10 +6,6 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     from ..utils.geo_utils import GeoUtils
 
     df = pts
-
-    if len(df) <= 2:
-        return df.copy()
-
     epsilon = p.get('epsilon', 100.0)
     compressedindices = []
 
