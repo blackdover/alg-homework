@@ -59,7 +59,7 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     return df.iloc[indices].reset_index(drop=False).rename(columns={"index": "orig_idx"})
 
 
-# 算法元数据
+
 DISPLAY_NAME = "DP算法"
 DEFAULT_PARAMS = {'epsilon': 0.0009}
 PARAM_HELP = {'epsilon': '距离阈值（度）'}

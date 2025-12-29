@@ -20,11 +20,6 @@ def calculate_sed_metrics(original_df: pd.DataFrame,
                          lat_col: str = "LAT",
                          lon_col: str = "LON",
                          idx_col: str = "orig_idx") -> Dict[str, float]:
-    """
-    计算真正的 SED（Synchronized Euclidean Distance）。
-    compressed_df 必须包含原始索引列 idx_col（指向 original_df 的行号）。
-    对每个压缩段，在时间轴上对段内原始点做线性插值并计算地理距离（米）。
-    """
     from .geo_utils import GeoUtils
 
     if len(compressed_df) <= 1 or len(original_df) <= 1:
@@ -68,7 +63,6 @@ def calculate_sed_metrics(original_df: pd.DataFrame,
         lat0, lon0 = float(s[lat_col]), float(s[lon_col])
         lat1, lon1 = float(e[lat_col]), float(e[lon_col])
 
-        # 取原始索引区间内（不含端点）的点
         seg = o.iloc[si + 1: ei].copy()
         if seg.empty:
             continue
@@ -101,9 +95,6 @@ def calculate_navigation_event_recall(original_df: pd.DataFrame,
                                     compressed_df: pd.DataFrame,
                                     cog_threshold: float = 20.0,
                                     match_window_s: int = 30) -> float:
-    """
-    计算航行事件保留率（使用时间窗口匹配）。
-    """
     if len(original_df) < 2:
         return 1.0
 
@@ -163,7 +154,6 @@ def evaluate_compression(original_df: pd.DataFrame,
         sed_metrics = {'mean': 0.0, 'max': 0.0, 'p95': 0.0}
     event_recall = calculate_navigation_event_recall(original_df, compressed_df)
 
-    # 计算轨迹相似度指标
     similarity_score = calculate_trajectory_similarity(original_df, compressed_df, sed_metrics)
     print(f"\n{'='*60}")
     print(f"算法: {algorithm_name}")
@@ -198,13 +188,9 @@ def evaluate_compression(original_df: pd.DataFrame,
     return result
 
 
-# 定义计算轨迹相似度指标的函数
 def calculate_trajectory_similarity(original_df: pd.DataFrame,
                                   compressed_df: pd.DataFrame,
                                   sed_metrics: Dict[str, float]) -> float:
-    """
-    轨迹相似度（0~1）：用 SED 均值归一化后转成分数（使用总轨迹长度作为基准）。
-    """
     from .geo_utils import GeoUtils
 
     if len(original_df) <= 1 or len(compressed_df) <= 1:

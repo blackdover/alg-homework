@@ -57,7 +57,6 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     return df.iloc[compressedindices].reset_index(drop=False).rename(columns={"index": "orig_idx"})
 
 
-# 算法元数据
 DISPLAY_NAME = "自适应阈值 DR"
 DEFAULT_PARAMS = {
     'min_threshold': 20.0,

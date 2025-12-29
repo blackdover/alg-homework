@@ -1,7 +1,3 @@
-"""
-algcode.utils 包：导出 dataloader、geo_utils、metrics、visualization 的常用接口
-"""
-
 from .dataloader import (
     load_data, dataframe_to_trajectory_points, trajectory_points_to_dataframe, TrajectoryPoint,
     scan_categories, scan_datasets, load_ais_dataset

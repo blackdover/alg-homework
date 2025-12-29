@@ -61,7 +61,7 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     return df.iloc[compressedindices].reset_index(drop=False).rename(columns={"index": "orig_idx"})
 
 
-# 算法元数据
+#向页面展示的数据
 DISPLAY_NAME = "固定阈值 DR"
 DEFAULT_PARAMS = {'epsilon': 100.0}
 PARAM_HELP = {'epsilon': '距离阈值（米）'}

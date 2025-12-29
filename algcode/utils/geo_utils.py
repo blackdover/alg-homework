@@ -3,40 +3,19 @@ from typing import Dict, Tuple
 
 
 class GeoUtils:
-    """地理计算工具类，处理核心数学计算"""
-
-    # 地球半径（米）
     EARTH_RADIUS_M = 6371000.0
-
-    # 节到米/秒的转换系数
     KNOTS_TO_MPS = 0.514444
 
     @staticmethod
     def knots_to_mps(knots: float) -> float:
-        """
-        将航速从节(knots)转换为米/秒(m/s)
-
-        参数:
-            knots: 航速（节）
-
-        返回:
-            航速（米/秒）
-        """
         return knots * GeoUtils.KNOTS_TO_MPS
 
     @staticmethod
     def deg_to_rad(degrees: float) -> float:
-        """
-        角度转弧度
-        """
         return math.radians(degrees)
 
     @staticmethod
     def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-        """
-        计算两点间的地球表面距离（Haversine公式）
-        返回距离（米）
-        """
         lat1_rad = math.radians(lat1)
         lon1_rad = math.radians(lon1)
         lat2_rad = math.radians(lat2)
@@ -52,10 +31,6 @@ class GeoUtils:
     def predict_position(lat_old: float, lon_old: float,
                         speed_mps: float, course_deg: float,
                         delta_t: float) -> Tuple[float, float]:
-        """
-        航位预测：根据起始点状态和时间差预测新位置
-        返回 (新纬度, 新经度)
-        """
         distance = speed_mps * delta_t
         course_rad = math.radians(course_deg)
         lat_old_rad = math.radians(lat_old)
@@ -70,9 +45,6 @@ class GeoUtils:
 
     @staticmethod
     def get_linear_threshold(speed_knots: float, params: Dict) -> float:
-        """
-        根据航速计算动态距离阈值 (连续线性映射方案)
-        """
         epsilon_min = params.get('min_threshold', 20.0)
         epsilon_max = params.get('max_threshold', 500.0)
         v_lower = params.get('v_lower', 3.0)
@@ -89,7 +61,6 @@ class GeoUtils:
     def point_to_line_distance(lat: float, lon: float,
                               lat1: float, lon1: float,
                               lat2: float, lon2: float) -> float:
-        """计算点到线段的垂直距离（米，近似）"""
         avg_lat = (lat1 + lat2) / 2
         cos_lat = math.cos(math.radians(avg_lat))
         x = lon * 111000 * cos_lat
