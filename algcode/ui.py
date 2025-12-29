@@ -264,9 +264,9 @@ class TrajectoryCompressionGUI(QMainWindow):
         layout = QVBoxLayout(self.metrics_tab)
 
         self.metrics_table = QTableWidget()
-        self.metrics_table.setColumnCount(8)
+        self.metrics_table.setColumnCount(7)
         self.metrics_table.setHorizontalHeaderLabels([
-            '算法', '压缩率', 'SED均值', 'SED最大', 'SED_95%', '事件保留', '运行时间', '综合得分'
+            '算法', '压缩率', 'SED均值', 'SED最大', 'SED_95%', '事件保留', '综合得分'
         ])
         self.metrics_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         layout.addWidget(self.metrics_table)
@@ -566,8 +566,7 @@ class TrajectoryCompressionGUI(QMainWindow):
                 self.metrics_table.setItem(row, 3, QTableWidgetItem(f"{metrics.get('sed_max', 0.0):.2f}"))
                 self.metrics_table.setItem(row, 4, QTableWidgetItem(f"{metrics.get('sed_p95', 0.0):.2f}"))
                 self.metrics_table.setItem(row, 5, QTableWidgetItem(f"{metrics.get('event_recall', 0.0):.3f}"))
-                self.metrics_table.setItem(row, 6, QTableWidgetItem(f"{metrics.get('elapsed_time', 0.0):.4f}"))
-                self.metrics_table.setItem(row, 7, QTableWidgetItem(f"{metrics.get('composite_score', 0.0):.5f}"))
+                self.metrics_table.setItem(row, 6, QTableWidgetItem(f"{metrics.get('composite_score', 0.0):.5f}"))
             except Exception as e:
                 print(f"填充表格时出错 {alg_name}: {e}")
 
