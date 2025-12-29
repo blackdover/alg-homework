@@ -12,10 +12,11 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     i = 0
     while i < len(df) - 1:
         anchoridx = i
-        windowend = i + 1
+        
+        bestend = i + 1
 
         left, right = i + 1, len(df) - 1
-        bestend = i + 1
+        
 
         while left <= right:
             mid = (left + right) // 2
@@ -37,11 +38,10 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
             else:
                 right = mid - 1
 
-        windowend = bestend
 
         compressedindices.append(anchoridx)
 
-        i = windowend
+        i = bestend
 
         if i <= anchoridx:
             i = anchoridx + 1
