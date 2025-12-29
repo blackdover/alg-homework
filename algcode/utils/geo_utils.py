@@ -1,7 +1,6 @@
 import math
 from typing import Dict, Tuple
 
-
 class GeoUtils:
     EARTH_RADIUS_M = 6371000.0
     KNOTS_TO_MPS = 0.514444

@@ -3,14 +3,10 @@ from typing import Dict, List
 
 def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     from ..utils.geo_utils import GeoUtils
-
     df = pts
-
     eps_deg = float(p.get('epsilon', 0.0009))
     epsilon = eps_deg * 111000.0
-
     indices: List[int] = []
-
     def recurse(start: int, end: int):
         if end <= start + 1:
             return
@@ -19,7 +15,6 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
         lon1 = df.iloc[start]['LON']
         lat2 = df.iloc[end]['LAT']
         lon2 = df.iloc[end]['LON']
-
         maxdist = -1.0
         maxidx = -1
         for i in range(start + 1, end):
@@ -29,7 +24,6 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
             if dist > maxdist:
                 maxdist = dist
                 maxidx = i
-
         if maxdist > epsilon and maxidx != -1:
             recurse(start, maxidx)
             indices.append(maxidx)

@@ -3,7 +3,6 @@ import os
 from typing import Optional, Tuple, Dict, List, Any
 from dataclasses import dataclass
 
-
 @dataclass
 class TrajectoryPoint:
     lat: float
@@ -22,8 +21,6 @@ class TrajectoryPoint:
             'COG': self.cog,
             'MMSI': self.mmsi
         }
-
-
 def load_data(filepath: str, mmsi: Optional[int] = None) -> pd.DataFrame:
     df = pd.read_csv(filepath)
 
@@ -31,23 +28,16 @@ def load_data(filepath: str, mmsi: Optional[int] = None) -> pd.DataFrame:
     missing_columns = [col for col in required_columns if col not in df.columns]
     if missing_columns:
         raise ValueError(f"缺少必需的列: {missing_columns}")
-
     if mmsi is not None:
         df = df[df['MMSI'] == mmsi].copy()
-
     df['BaseDateTime'] = pd.to_datetime(df['BaseDateTime'])
-
     df = df[
         (df['LAT'] >= -90) & (df['LAT'] <= 90) &
         (df['LON'] >= -180) & (df['LON'] <= 180)
     ].copy()
-
     df = df.dropna(subset=['SOG', 'COG', 'LAT', 'LON'])
-
     df = df.sort_values('BaseDateTime').reset_index(drop=True)
-
     return df[required_columns].copy()
-
 
 def dataframe_to_trajectory_points(df: pd.DataFrame) -> List[TrajectoryPoint]:
     points = []
@@ -68,19 +58,16 @@ def trajectory_points_to_dataframe(points: List[TrajectoryPoint]) -> pd.DataFram
     data = [point.to_dict() for point in points]
     return pd.DataFrame(data)
 
-
 def scan_categories(data_root: str) -> List[str]:
     if not os.path.exists(data_root):
         return []
     return [d for d in os.listdir(data_root)
             if os.path.isdir(os.path.join(data_root, d))]
 
-
 def scan_datasets(category_path: str) -> List[Tuple[str, int]]:
     datasets = []
     if not os.path.exists(category_path):
         return datasets
-
     for file in os.listdir(category_path):
         if file.endswith('.csv'):
             filepath = os.path.join(category_path, file)
