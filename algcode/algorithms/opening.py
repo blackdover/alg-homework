@@ -11,7 +11,7 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
     i = 0
     while i < len(df) - 1:
         aim = i
-        best_end = i + 1
+        bestend = i + 1
         left, right = i + 1, len(df) - 1
 
         while left <= right:
@@ -27,12 +27,12 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
                     valid = False
                     break
             if valid:
-                best_end = mid
+                bestend = mid
                 left = mid + 1
             else:
                 right = mid - 1
         now.append(aim)
-        i = best_end
+        i = bestend
         if i <= aim:
             i = aim + 1
     if not now or now[-1] != len(df) - 1:
