@@ -26,7 +26,7 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
             delta_t=chang_t
         )
 
-        error = GeoUtils.haversine_distance(
+        error = GeoUtils.distance_betweeen(
             lat1=currentpoint['LAT'],
             lon1=currentpoint['LON'],
             lat2=next_lat,

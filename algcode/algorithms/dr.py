@@ -15,17 +15,19 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
         chang_t = (currentpoint['BaseDateTime'] - lastpoint['BaseDateTime']).total_seconds()
         if chang_t <= 0:
             continue
-        speedknots = lastpoint['SOG']
-        coursedegr = lastpoint['COG']
-        speedmps = GeoUtils.knots_to_mps(speedknots)
+
+        speed = lastpoint['SOG']
+        fangxiang = lastpoint['COG']
+
+        speed2 = GeoUtils.knots_to_mps(speed)
         next_lat, next_lon = GeoUtils.predict_position(
             lat_old=lastpoint['LAT'],
             lon_old=lastpoint['LON'],
-            speed_mps=speedmps,
-            course_deg=coursedegr,
+            speed_mps=speed2,
+            course_deg=fangxiang,
             delta_t=chang_t
         )
-        error = GeoUtils.haversine_distance(
+        error = GeoUtils.distance_betweeen(
             lat1=currentpoint['LAT'],
             lon1=currentpoint['LON'],
             lat2=next_lat,
@@ -34,6 +36,7 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
         if error >= epsilon:
             now.append(i)
             last = i
+            
     if now[-1] != len(df) - 1:
         now.append(len(df) - 1)
 

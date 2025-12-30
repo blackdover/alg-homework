@@ -16,6 +16,7 @@ def compress(pts: pd.DataFrame, p: Dict) -> pd.DataFrame:
         lon1 = df.iloc[start]['LON']
         lat2 = df.iloc[end]['LAT']
         lon2 = df.iloc[end]['LON']
+        
         maxdist = -1.0
         maxi = -1
         for i in range(start + 1, end):

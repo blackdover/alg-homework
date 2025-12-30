@@ -70,7 +70,7 @@ def calculate_sed_metrics(original_df: pd.DataFrame,
         lat_hat = lat0 + alpha * (lat1 - lat0)
         lon_hat = lon0 + alpha * (lon1 - lon0)
         for la, lo, lh, lnh in zip(lat_actual, lon_actual, lat_hat, lon_hat):
-            sed = GeoUtils.haversine_distance(la, lo, lh, lnh)
+            sed = GeoUtils.distance_betweeen(la, lo, lh, lnh)
             sed_values.append(sed)
 
     if not sed_values:
@@ -176,7 +176,7 @@ def calculate_trajectory_similarity(original_df: pd.DataFrame,
 
     total_distance = 0.0
     for i in range(1, len(original_df)):
-        total_distance += GeoUtils.haversine_distance(
+        total_distance += GeoUtils.distance_betweeen(
             float(original_df.iloc[i - 1]['LAT']), float(original_df.iloc[i - 1]['LON']),
             float(original_df.iloc[i]['LAT']), float(original_df.iloc[i]['LON'])
         )

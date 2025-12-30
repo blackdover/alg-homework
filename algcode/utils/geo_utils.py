@@ -14,7 +14,7 @@ class GeoUtils:
         return math.radians(degrees)
 
     @staticmethod
-    def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    def distance_betweeen(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         lat1_rad = math.radians(lat1)
         lon1_rad = math.radians(lon1)
         lat2_rad = math.radians(lat2)
