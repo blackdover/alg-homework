@@ -1,7 +1,0 @@
-pandas>=1.5.0
-numpy>=1.23.0
-folium>=0.14.0
-rdp>=0.8
-PyQt5>=5.15.0
-PyQtWebEngine>=5.15.0
-
